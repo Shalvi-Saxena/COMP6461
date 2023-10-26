@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+#export PATH=$PATH:$(pwd)
+#python3 server.py
+
+import sys
+import argparse
+from urllib.parse import urlparse
+from client import http_get, http_post
+
+# Command-Line Tool
+def main():
+    
+    parser = argparse.ArgumentParser(description="httpc is a simplified HTTP client")
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+    
+    for i in range(len(sys.argv)):
+       if sys.argv[i]=='-h':
+           sys.argv[i]='-H'
+    
+    # Subparser for the 'get' command
+    parser_get = subparsers.add_parser("get", help="HTTP GET request")
+    parser_get.add_argument("-v", "--verbose", action="store_true", help="Prints the detail of the response")
+    parser_get.add_argument("-H", "--header", action="append", help="Add headers to the request")
+    parser_get.add_argument("url", help="The URL to make the request to")
+    parser_get.add_argument("-o", "--output", help="Output file to save the response body")
+
+    # Subparser for the 'post' command
+    parser_post = subparsers.add_parser("post", help="HTTP POST request")
+    parser_post.add_argument("-v", "--verbose", action="store_true", help="Prints the detail of the response")
+    parser_post.add_argument("-H", "--header", action="append", help="Add headers to the request")
+    parser_post.add_argument("-d", "--data", help="Inline data to include in the request body (for POST)")
+    parser_post.add_argument("-f", "--file", help="File to include in the request body (for POST)")
+    parser_post.add_argument("url", help="The URL to make the request to")
+    parser_post.add_argument("-o", "--output", help="Output file to save the response body")
+    
+    # Subparser for the 'help' command
+    parser_help = subparsers.add_parser("help", help="HTTP Help request")
+    parser_help.add_argument("url", nargs='?', default="", help="Default help")
+
+    args = parser.parse_args()
+    
+    if args.command == "get":
+        http_get(args.url, args.header, verbose=args.verbose, output=args.output)
+    elif args.command == "post":
+        # print(args.header)
+        if args.data and args.file:
+            print("Error: Both -d and -f cannot be used together for POST request.")
+            sys.exit(1)
+        if args.data:
+            http_post(args.url, args.data, args.header, verbose=args.verbose, output=args.output)
+        elif args.file:
+            with open(args.file, "r") as f:
+                data = f.read()
+                http_post(args.url, data, args.header, verbose=args.verbose, output=args.output)
+        else:
+            print("Error: Wrong syntax")
+            sys.exit(1)
+    elif args.command == "help":
+        if args.url == "get":
+            print("""
+httpc help get
+
+usage: httpc get [-v] [-h key:value] URL
+
+Get executes a HTTP GET request for a given URL.
+
+-v               Prints the detail of the response such as protocol, status, and headers.
+-h key:value     Associates headers to HTTP Request with the format 'key:value'.""")
+        elif args.url == "post":
+            print("""
+httpc help post
+
+usage: httpc post [-v] [-h key:value] [-d inline-data] [-f file] URL
+
+Post executes a HTTP POST request for a given URL with inline data or from file.
+
+-v               Prints the detail of the response such as protocol, status, and headers.
+-h key:value     Associates headers to HTTP Request with the format 'key:value'.
+-d string        Associates an inline data to the body HTTP POST request.
+-f file          Associates the content of a file to the body HTTP POST request.
+
+Either [-d] or [-f] can be used but not both.""")
+        else:
+            print("""
+httpc help
+
+httpc is a curl-like application but supports HTTP protocol only.
+Usage:
+    httpc command [arguments]
+The commands are:
+    get executes a HTTP GET request and prints the response.
+    post executes a HTTP POST request and prints the response.
+    help prints this screen.
+
+Use "httpc help [command]" for more information about a command.""")
+    
+
+if __name__ == "__main__":
+    main()

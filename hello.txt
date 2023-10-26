@@ -1,0 +1,17 @@
+{
+  "args": {}, 
+  "data": "{\"Assignment\": \"Assignment 1 file\"}", 
+  "files": {}, 
+  "form": {}, 
+  "headers": {
+    "Content-Length": "35", 
+    "Content-Type": "application/json", 
+    "Host": "httpbin.org", 
+    "X-Amzn-Trace-Id": "Root=1-6537172b-30cc27f57670ab8e58f6b9f2"
+  }, 
+  "json": {
+    "Assignment": "Assignment 1 file"
+  }, 
+  "origin": "67.71.76.200", 
+  "url": "http://httpbin.org/post"
+}
